@@ -6,3 +6,8 @@ def ablation_hook(module, input, output):
 
 def donor_hook(module, input, output):
     output[:, channel_idx].copy_(donor[:, channel_idx])
+
+
+
+def hook_setter(hook, **kwargs):
+    ...
