@@ -27,7 +27,7 @@ def setup_loader(img_dir, preprocess, batch_size=8):
     }
     if img_dir == "__download__":
         def collate_fn(batch):
-            images = [preprocess(cv2.imread(x["image"])[:, :, ::-1]) for x in batch]
+            images = [preprocess(x["image"]) for x in batch]
             labels = [x["label"] for x in batch]
             return torch.stack(images), torch.tensor(labels)
 
