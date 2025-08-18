@@ -27,7 +27,7 @@ def main():
     gpu_cache = {}
 
     with torch.no_grad():
-        for x, _ in tqdm(loader):
+        for x, _ in tqdm(loader, desc="storing activations "):
             x = x.to(device)
             model(x)
 
