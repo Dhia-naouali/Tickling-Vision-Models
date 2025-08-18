@@ -19,7 +19,7 @@ def main():
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     
     model = load_inceptionV1(device)
-    loader = setup_loader(args.images_dir, preprocess, batch_size=8)
+    loader = setup_loader(args.img_dir, preprocess, batch_size=8)
 
     layer_names = []
 
