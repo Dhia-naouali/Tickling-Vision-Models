@@ -16,13 +16,13 @@ class ActivationsCollector:
             module = modules[layer_name]
             self.handles.append(
                 module.regitser_forward_hook(
-                    self.hook_fn(layer_name)
+                    self.attach_hook(layer_name)
                 )
             )
 
-    def hook_fn(self, name):
+    def attach_hook(self, name):
         def hook(module, input_, output):
-            self.activations[name] = output.detach()
+            self.activations[name] = output.detach().cpu().numpy()
         return hook
 
     def clear(self):
