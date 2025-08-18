@@ -55,7 +55,7 @@ def train_sae(samples_path, checkpoints_dir, layer_name, config=SAEConfig):
         config.z_dim
     ).to(config.device)
     
-    optimizer = optim.AdamW(model.parameters(), config.learning_rate)
+    optimizer = optim.Adam(model.parameters(), config.learning_rate)
     criterion = nn.MSELoss()
     recon_loss_total = 0    
     sparsity_loss_total = 0    
