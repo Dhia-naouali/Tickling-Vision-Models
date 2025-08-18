@@ -19,7 +19,7 @@ def imagenet_preprocess():
     return weights.transforms()
 
 
-def make_loader(img_dir, preprocess, batch_size=8):
+def setup_loader(img_dir, preprocess, batch_size=8):
     kwargs = {
         "batch_size": batch_size,
         "shuffle": False,
@@ -31,7 +31,7 @@ def make_loader(img_dir, preprocess, batch_size=8):
             labels = [x["label"] for x in batch]
             return torch.stack(images), torch.tensor(labels)
 
-        dataset = load_dataset("imagenet-1k-mini", split="val")
+        dataset = load_dataset("timm/mini-imagenet", split="val")
         return DataLoader(dataset, **kwargs, collate_fn=collate_fn)
 
     dataset = ImageFolder(img_dir, transform=preprocess)
