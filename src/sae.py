@@ -82,7 +82,8 @@ def train_sae(samples_path, checkpoints_dir, layer_name, config=SAEConfig):
         )
     
     register_metadata(
-        checkpoints_dir, 
+        checkpoints_dir,
+        layer_name,
         {
             **asdict(config),
             "means": None, # save npy vs toList
@@ -91,14 +92,18 @@ def train_sae(samples_path, checkpoints_dir, layer_name, config=SAEConfig):
             "last_sparsity_loss": sparsity_loss.item(),
         }
     )
-    
-    
-    
+
+
+
 def register_metadata(checkpoints_path, layer_name, config):
     json_path = os.path.join(checkpoints_path, "metadata.json")
     metadata = json.load(json_path) if os.path.exists(json_path) else {}
-
     metadata[layer_name] = config
     
-    with open(json_path) as file:
+    with open(json_path, "w") as file:
         json.dum(file, indent=2)
+        
+
+
+def load_model(layer_name):
+    
