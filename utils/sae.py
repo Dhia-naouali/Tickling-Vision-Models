@@ -1,6 +1,8 @@
 import os
+import json
 import numpy as np
 from tqdm import tqdm
+from dataclasses import dataclass, asdict
 
 import torch
 from torch import nn, optim
@@ -23,7 +25,7 @@ class SAE(nn.Module):
         z = F.relu(z)
         return self.decoder(z), z
 
-
+@dataclass
 class SAEConfig:
     z_dim = 64
     batch_size = ...
@@ -32,6 +34,7 @@ class SAEConfig:
     epochs = 32
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     
+
 def train_sae(samples_path, checkpoints_dir, layer_name, config=SAEConfig):
     os.makedirs(checkpoints_dir, exist_ok=True)
     data_block = np.load(samples_path)
@@ -77,3 +80,25 @@ def train_sae(samples_path, checkpoints_dir, layer_name, config=SAEConfig):
             checkpoints_dir,
             f"{layer_name}_SAE_checkpoint_{recon_loss_total / len(dataloader):02.4f}-recon_loss_{sparsity_loss_total / len(dataloader):02.4f}-sparsity_loss.pth")
         )
+    
+    register_metadata(
+        checkpoints_dir, 
+        {
+            **asdict(config),
+            "means": None, # save npy vs toList
+            "stds": None,
+            "last_recon_loss": recon_loss.item(),
+            "last_sparsity_loss": sparsity_loss.item(),
+        }
+    )
+    
+    
+    
+def register_metadata(checkpoints_path, layer_name, config):
+    json_path = os.path.join(checkpoints_path, "metadata.json")
+    metadata = json.load(json_path) if os.path.exists(json_path) else {}
+
+    metadata[layer_name] = config
+    
+    with open(json_path) as file:
+        json.dum(file, indent=2)
