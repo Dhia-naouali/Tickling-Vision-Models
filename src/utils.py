@@ -31,7 +31,7 @@ def setup_loader(img_dir, preprocess, batch_size=8):
             labels = [x["label"] for x in batch]
             return torch.stack(images), torch.tensor(labels)
 
-        dataset = load_dataset("timm/mini-imagenet", split="val")
+        dataset = load_dataset("timm/mini-imagenet", split="validation")
         return DataLoader(dataset, **kwargs, collate_fn=collate_fn)
 
     dataset = ImageFolder(img_dir, transform=preprocess)
