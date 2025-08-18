@@ -14,18 +14,18 @@ class ActivationsCollector:
 
 
     def _set_hooks(self):
-        modules = self.model
+        modules = dict(self.model.named_modules())
         for layer_name in self.layer_names:
             module = modules[layer_name]
             self.handles.append(
-                module.regitser_forward_hook(
+                module.register_forward_hook(
                     self.attach_hook(layer_name)
                 )
             )
 
     def attach_hook(self, name):
         def hook(module, input_, output):
-            self.activations[name] = output.detach().cpu().numpy()
+            self.activations[name] = output.detach()
         return hook
 
     def clear(self):
@@ -49,13 +49,10 @@ def sample_pixels(a, samples_per_image=512):
 def store_activations(activations, out_dir, samples_per_image=512):
     os.makedirs(out_dir, exist_ok=True)
     for ln, a in activations.items():
-        if a.dim() == 3: 
-            a = a.unsqueeze(0)
-
-        samples = sample_pixels(a, sampes_per_image=samples_per_image)
+        samples = sample_pixels(a, samples_per_image=samples_per_image)
         np.save(
             os.path.join(out_dir, f"{ln}_activations.npy"), 
-            samples.cpu().numpy()
+            samples.cpu().numpy() if isinstance(samples, torch.Tensor) else samples
         )
 
     meta = {"layers": list(activations.keys()), "samples_per_image": samples_per_image}
