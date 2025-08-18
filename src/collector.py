@@ -62,8 +62,15 @@ def store_activations(activations, out_dir, samples_per_image=512):
 
 
 
-
-
+def checkpoint_activations(gpu_A, cpu_A):
+    for k, v in gpu_A.items():
+        v = v.cpu().numpy()
+        if k in cpu_A:
+            cpu_A[k] = np.concatenate([cpu_A[k], v])
+        else:
+            cpu_A[k] = v
+    gpu_A.clear()
+    torch.cuda.empty_cache()
 
 
 

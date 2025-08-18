@@ -9,6 +9,12 @@ from torchvision.datasets import ImageFolder
 from datasets import load_dataset
 
 
+def compute_free_cuda_mem():
+    total = torch.cuda.get_device_properties(0).total_memory
+    reserved = torch.cuda.memory_reserved(0)
+    return (total - reserved) / total
+
+
 def load_inceptionV1(device=None):
     model = models.googlenet(weights=models.GoogLeNet_Weights.DEFAULT)
     model.eval().to(device)
