@@ -3,7 +3,7 @@ import cv2
 import torch
 
 from torchvision import models
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset
 
 from torchvision.datasets import ImageFolder
 from datasets import load_dataset
@@ -19,7 +19,7 @@ def imagenet_preprocess():
     return weights.transforms()
 
 
-def setup_loader(img_dir, preprocess, batch_size=8):
+def setup_loader(img_dir, preprocess, batch_size=8, num_samples=5e3):
     kwargs = {
         "batch_size": batch_size,
         "shuffle": False,
@@ -27,12 +27,16 @@ def setup_loader(img_dir, preprocess, batch_size=8):
     }
     if img_dir == "__download__":
         def collate_fn(batch):
-            images = [preprocess(x["image"]) for x in batch]
+            images = [preprocess(x["image"].convert("RGB")) for x in batch]
             labels = [x["label"] for x in batch]
             return torch.stack(images), torch.tensor(labels)
-
-        dataset = load_dataset("timm/mini-imagenet", split="validation")
-        return DataLoader(dataset, **kwargs, collate_fn=collate_fn)
+        dataset = load_dataset(
+            "timm/mini-imagenet", 
+            split="validation"
+        )
+        indices = range(int(min(num_samples, len(dataset))))
+        return DataLoader(dataset.select(indices), **kwargs, collate_fn=collate_fn)
 
     dataset = ImageFolder(img_dir, transform=preprocess)
-    return DataLoader(dataset, **kwargs)
+    indices = list(range(min(num_samples, len(dataset))))
+    return DataLoader(Subset(dataset, indices), **kwargs)
