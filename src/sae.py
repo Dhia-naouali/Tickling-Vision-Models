@@ -14,12 +14,13 @@ class SAE(nn.Module):
     def __init__(self, in_dim, z_dim):
         super().__init__()
         self.encoder = nn.Linear(in_dim, z_dim)
-        self.decoder = nn.Linear(in_dim, z_dim)
+        self.decoder = nn.Linear(z_dim, in_dim)
         self.apply(self.init_weights)
 
     def init_weights(self, module):
-        nn.init.xavier_uniform_(module.weight)
-        nn.init.zeros_(module.bias)
+        if isinstance(module, nn.Linear):
+            nn.init.xavier_uniform_(module.weight)
+            nn.init.zeros_(module.bias)
 
     def forward(self, x):
         z = self.encoder(x)
@@ -33,14 +34,14 @@ class SAEConfig:
     learning_rate: float = 1e-3
     l1_lambda: float = 1e-3
     epochs: int = 32
-    device: Union[torch.Device, str] = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device: Union[torch.device, str] = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     
 
 def train_sae(samples_path, checkpoints_dir, layer_name, config=SAEConfig):
     os.makedirs(checkpoints_dir, exist_ok=True)
     data_block = np.load(samples_path)
-    means = data_block.mean(axis=0, keep_dim=True)
-    stds = data_block.std(axis=0, keep_dim=True)
+    means = data_block.mean(axis=0, keepdims=True)
+    stds = data_block.std(axis=0, keepdims=True)
     data_block = (data_block - means) / (stds + 1e-8)
     dataset = TensorDataset(torch.from_numpy(data_block))
     dataloader = DataLoader(
@@ -61,8 +62,8 @@ def train_sae(samples_path, checkpoints_dir, layer_name, config=SAEConfig):
     recon_loss_total = 0    
     sparsity_loss_total = 0    
     for epoch in range(1, config.epochs+1):
-        pb = tqdm(dataloader, desc=f"[{12:layer_name}] epoch: {epoch/config.epochs}")
-        for x in pb:
+        pb = tqdm(dataloader, desc=f"[{layer_name:12}] epoch: {epoch/config.epochs}")
+        for (x,) in pb:
             x = x.to(config.device)
             x_recon, z = model(x)
             recon_loss = criterion(x, x_recon)
@@ -107,4 +108,4 @@ def register_metadata(checkpoints_path, layer_name, config):
 
 
 def load_model(layer_name):
-    
+    ...
