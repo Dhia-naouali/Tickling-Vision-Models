@@ -1,7 +1,7 @@
 import os
 import json
 import numpy as np
-from tqdm import tqdm
+from tqdm.auto import tqdm
 from typing import Union
 from dataclasses import dataclass, asdict
 
@@ -33,7 +33,7 @@ class SAEConfig:
     batch_size: int = 32
     learning_rate: float = 1e-3
     l1_lambda: float = 1e-3
-    epochs: int = 32
+    epochs: int = 4
     device: Union[torch.device, str] = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     
 
@@ -49,7 +49,8 @@ def train_sae(samples_path, checkpoints_dir, layer_name, config=SAEConfig):
         batch_size=config.batch_size,
         shuffle=True,
         drop_last=True,
-        num_workers=os.cpu_count()
+        num_workers=os.cpu_count(),
+        pin_memory=True,
     )
     
     model = SAE(
@@ -62,7 +63,7 @@ def train_sae(samples_path, checkpoints_dir, layer_name, config=SAEConfig):
     recon_loss_total = 0    
     sparsity_loss_total = 0    
     for epoch in range(1, config.epochs+1):
-        pb = tqdm(dataloader, desc=f"[{layer_name:12}] epoch: {epoch/config.epochs}")
+        pb = tqdm(dataloader, desc=f"[{layer_name:<12}] epoch: {epoch}/{config.epochs}", ncols=160)
         for (x,) in pb:
             x = x.to(config.device)
             x_recon, z = model(x)
@@ -77,7 +78,7 @@ def train_sae(samples_path, checkpoints_dir, layer_name, config=SAEConfig):
             pb.set_postfix(recon_loss=recon_loss.item(), sparsity_loss=sparsity_loss.item(), loss=loss.item())
             
     torch.save(
-        model.stat_dict(),
+        model.state_dict(),
         os.path.join(
             checkpoints_dir,
             f"{layer_name}_SAE_checkpoint_{recon_loss_total / len(dataloader):02.4f}-recon_loss_{sparsity_loss_total / len(dataloader):02.4f}-sparsity_loss.pth")
@@ -99,13 +100,15 @@ def train_sae(samples_path, checkpoints_dir, layer_name, config=SAEConfig):
 
 def register_metadata(checkpoints_path, layer_name, config):
     json_path = os.path.join(checkpoints_path, "metadata.json")
-    metadata = json.load(json_path) if os.path.exists(json_path) else {}
-    metadata[layer_name] = config
+    metadata = {}
+    if os.path.exists(json_path):
+        with open(json_path, "r") as file:
+            metadata = json.load(file)
     
+    
+    metadata[layer_name] = {**config, "device": config["device"].type}
     with open(json_path, "w") as file:
-        json.dum(file, indent=2)
-        
-
+        json.dump(metadata, file, indent=2)
 
 def load_model(layer_name):
     ...
