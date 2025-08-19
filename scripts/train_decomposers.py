@@ -10,7 +10,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--checkpoints-dir", default="SAE_checkpoints")
     parser.add_argument("--data-dir", default="latent_data")
-    parser.add_argument("--z-dim", type=int)
+    parser.add_argument("--z-dim-factor", type=int)
     parser.add_argument("--batch-size", type=int)
     parser.add_argument("--l1-lambda", type=float)
     parser.add_argument("--learning-rate", type=float)

@@ -11,8 +11,9 @@ import torch.nn.functional as F
 from torch.utils.data import TensorDataset, DataLoader
 
 class SAE(nn.Module):
-    def __init__(self, in_dim, z_dim):
+    def __init__(self, in_dim, z_dim_factor):
         super().__init__()
+        z_dim = in_dim // z_dim_factor
         self.encoder = nn.Linear(in_dim, z_dim)
         self.decoder = nn.Linear(z_dim, in_dim)
         self.apply(self.init_weights)
@@ -29,7 +30,7 @@ class SAE(nn.Module):
 
 @dataclass
 class SAEConfig:
-    z_dim: int = 64
+    z_dim_factor: int = 4
     batch_size: int = 32
     learning_rate: float = 1e-3
     l1_lambda: float = 1e-3
@@ -55,7 +56,7 @@ def train_sae(samples_path, checkpoints_dir, layer_name, config=SAEConfig):
     
     model = SAE(
         data_block.shape[1], 
-        config.z_dim
+        config.z_dim_factor
     ).to(config.device)
     
     optimizer = optim.Adam(model.parameters(), config.learning_rate)
@@ -63,7 +64,7 @@ def train_sae(samples_path, checkpoints_dir, layer_name, config=SAEConfig):
     recon_loss_total = 0    
     sparsity_loss_total = 0    
     for epoch in range(1, config.epochs+1):
-        pb = tqdm(dataloader, desc=f"[{layer_name:<12}] epoch: {epoch}/{config.epochs}", ncols=160)
+        pb = tqdm(dataloader, desc=f"[{layer_name} {epoch}/{config.epochs}]", ncols=160)
         for (x,) in pb:
             x = x.to(config.device)
             x_recon, z = model(x)
@@ -76,7 +77,8 @@ def train_sae(samples_path, checkpoints_dir, layer_name, config=SAEConfig):
             sparsity_loss_total += sparsity_loss.item()
             recon_loss_total += recon_loss.item()
             pb.set_postfix(recon_loss=recon_loss.item(), sparsity_loss=sparsity_loss.item(), loss=loss.item())
-            
+    print("="*160)
+
     torch.save(
         model.state_dict(),
         os.path.join(
