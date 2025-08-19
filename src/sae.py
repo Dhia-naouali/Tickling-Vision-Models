@@ -2,6 +2,7 @@ import os
 import json
 import numpy as np
 from tqdm import tqdm
+from typing import Union
 from dataclasses import dataclass, asdict
 
 import torch
@@ -27,12 +28,12 @@ class SAE(nn.Module):
 
 @dataclass
 class SAEConfig:
-    z_dim = 64
-    batch_size = ...
-    learning_rate = 1e-3
-    l1_lambda = 1e-3
-    epochs = 32
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    z_dim: int = 64
+    batch_size: int = 32
+    learning_rate: float = 1e-3
+    l1_lambda: float = 1e-3
+    epochs: int = 32
+    device: Union[torch.Device, str] = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     
 
 def train_sae(samples_path, checkpoints_dir, layer_name, config=SAEConfig):
