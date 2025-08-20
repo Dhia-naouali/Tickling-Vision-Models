@@ -45,7 +45,7 @@ def sample_pixels(a, samples_per_image=512):
     return a[:, :, h_idx, w_idx]
 
 
-def store_activations(activations, out_dir, samples_per_image=512):
+def store_activations(activations, labels, out_dir, samples_per_image=512):
     os.makedirs(out_dir, exist_ok=True)
     for ln, a in activations.items():
         batched_samples = sample_pixels(a, samples_per_image=samples_per_image)
@@ -59,6 +59,11 @@ def store_activations(activations, out_dir, samples_per_image=512):
         np.save(
             os.path.join(out_dir, f"{ln}_global_activations.npy"), 
             samples.cpu().numpy() if isinstance(samples, torch.Tensor) else samples
+        )
+
+        np.save(
+            os.path.join(out_dir, f"labels.npy"), 
+            labels
         )
 
     meta = {"layers": list(activations.keys()), "samples_per_image": samples_per_image}

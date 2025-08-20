@@ -28,11 +28,10 @@ def imagenet_preprocess():
 def setup_loader(img_dir, preprocess, batch_size=8, num_samples=5e3):
     kwargs = {
         "batch_size": batch_size,
-        "shuffle": False,
+        "shuffle": True,
         "num_workers": os.cpu_count()
     }
     if img_dir == "__download__":
-        classes = [0, 3, 5, 6, 7, 9, 21, 27, 29, 86]
         def collate_fn(batch):
             images = [preprocess(x["image"].convert("RGB")) for x in batch]
             labels = [x["label"] for x in batch]
@@ -41,6 +40,7 @@ def setup_loader(img_dir, preprocess, batch_size=8, num_samples=5e3):
             "timm/mini-imagenet", 
             split="validation"
         )
+        classes = [0, 3, 5, 6, 7, 9, 21, 27, 29, 86]
         return DataLoader(dataset.filter(lambda x: x["label"] in classes), **kwargs, collate_fn=collate_fn)
 
     dataset = ImageFolder(img_dir, transform=preprocess)

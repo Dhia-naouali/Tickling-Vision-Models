@@ -1,5 +1,6 @@
 import torch
 import argparse
+import numpy as np
 from tqdm import tqdm
 
 from src.collector import ActivationsCollector, store_activations, checkpoint_activations
@@ -22,11 +23,13 @@ def main():
 
     collector = ActivationsCollector(model, args.layer_names)
 
+    labels = np.empty((0,))
     all_activations = {}
     gpu_cache = {}
 
     with torch.no_grad():
-        for x, _ in tqdm(loader, desc="storing activations "):
+        for x, y in tqdm(loader, desc="storing activations "):
+            labels = np.concatenate([labels, y])
             x = x.to(device)
             model(x)
 
@@ -39,6 +42,7 @@ def main():
     checkpoint_activations(gpu_cache, all_activations)
     store_activations(
         all_activations,
+        labels,
         args.out_dir,
         samples_per_image=args.samples_per_image
     )
