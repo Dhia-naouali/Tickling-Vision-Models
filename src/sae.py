@@ -115,7 +115,7 @@ def register_metadata(checkpoints_path, layer_name, config):
         json.dump(metadata, file, indent=2)
 
 
-def load_sae(layer_name, checkpoints_dir, device="cuda:0" if torch.cuda.is_available() else "cpu"):
+def load_sae(layer_name, checkpoints_dir, device="cpu"):
     with open(os.path.join(checkpoints_dir, f"metadata.json")) as f:
         meta = json.load(f)[layer_name]
     in_dim, z_dim_factor = meta["in_dim"], meta["z_dim_factor"]

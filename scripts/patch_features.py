@@ -1,9 +1,9 @@
 import os
 import json
-import tqdm
 import random
 import argparse
 import numpy as np
+from tqdm import tqdm
 
 import torch
 
@@ -14,18 +14,19 @@ from src.utils import load_inceptionV1, imagenet_preprocess, setup_loader
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--layer", default="inception4a")
-    parser.add_argument("--data-dir", default="__download__")
+    parser.add_argument("--raw-data-dir", default="__download__")
+    parser.add_argument("--checkpoints-dir", default="SAE_checkpoints")
+    parser.add_argument("--data-dir", default="latent_data")
     parser.add_argument("--atlas-dir", default="atlas")
     parser.add_argument("--num-pairs", type=int, default=12)
 
-    ...
     args = parser.parse_args()
     
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = load_inceptionV1(device)
     preprocess = imagenet_preprocess()
-    dataset = setup_loader(args.data_dir, preprocess).dataset
-    get_sample = lambda i: preprocess(dataset[i]["image"]), dataset[i]["label"]
+    dataset = setup_loader(args.raw_data_dir, preprocess).dataset
+    get_sample = lambda i: (preprocess(dataset[i]["image"]), dataset[i]["label"])
     indices = list(range(
         min(
             len(dataset) - len(dataset) % 2,
@@ -41,7 +42,7 @@ def main():
     if not f"{args.layer}_global_activations.npy" in os.listdir(args.data_dir):
         raise ValueError(f"invalid layer name, no activations found in {args.data_dir}")
     global_activations = np.load(os.path.join(args.data_dir, f"{args.layer}_global_activations.npy"))
-    sae = load_sae(args.layer)
+    sae = load_sae(args.layer, args.checkpoints_dir)
 
     D = sae.decoder.weight.detach().cpu().numpy()
     D /= np.linalg.norm(D, axis=0, keepdims=True) + 1e-8
@@ -57,12 +58,12 @@ def main():
         return swap_direction(output, collector["donor"], direction)
         
     layer_name_map = dict(model.named_modules())
-    layer_ = layer_name_map(args.layer)
+    layer_ = layer_name_map[args.layer]
     results = []
     with torch.no_grad():
         for (donor, dlabel), (target, tlabel) in tqdm(pairs):
-            donor = preprocess(donor).to(device)
-            target = preprocess(target).to(device)
+            donor = preprocess(donor).to(device).unsqueeze(0)
+            target = preprocess(target).to(device).unsqueeze(0)
             
             donor_handle = layer_.register_forward_hook(donor_hook)    
             model(donor)
@@ -77,12 +78,12 @@ def main():
             results.append({
                 "donor_target": dlabel,
                 "target_label": tlabel,
-                "direction_index": direction_idx,
-                "top5_classes": top5.indices.tolist(),
-                "top5_probs": top5.values.tolist()
+                "direction_index": direction_idx.item(),
+                "top5_classes": top5.indices.tolist()[0],
+                "top5_probs": top5.values.tolist()[0]
             })
             
-    os.makedirs(args.atlas_dir)
+    os.makedirs(args.atlas_dir, exist_ok=True)
     with open(os.path.join(args.atlas_dir, f"{args.layer}_patching_results.json"), "w") as file:
         json.dump(results, file, indent=2)
     
