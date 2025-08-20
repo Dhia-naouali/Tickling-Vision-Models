@@ -56,7 +56,7 @@ def main():
             )
         )
 
-        alignment_scores = (global_activations @ W).var(axis=0)
+        alignment_scores = (global_activations @ D).var(axis=0)
         topk = np.argsort(-alignment_scores)[:args.directions_per_layer]
         for idx in tqdm(topk):
             direction = torch.tensor([D[:, idx]], dtype=torch.float32, device=device)
