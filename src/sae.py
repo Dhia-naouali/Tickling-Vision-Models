@@ -1,7 +1,8 @@
 import os
 import json
+import glob
 import numpy as np
-from tqdm.auto import tqdm
+from tqdm import tqdm
 from typing import Union
 from dataclasses import dataclass, asdict
 
@@ -28,9 +29,12 @@ class SAE(nn.Module):
         z = F.relu(z)
         return self.decoder(z), z
 
+
 @dataclass
 class SAEConfig:
-    z_dim_factor: int = 4
+    in_dim: int = None
+    z_dim:  int = None
+    z_dim_factor: int = 2
     batch_size: int = 32
     learning_rate: float = 1e-3
     l1_lambda: float = 1e-3
@@ -58,7 +62,8 @@ def train_sae(samples_path, checkpoints_dir, layer_name, config=SAEConfig):
         data_block.shape[1], 
         config.z_dim_factor
     ).to(config.device)
-    
+    config.in_dim = data_block.shape[1]
+    config.z_dim = config.in_dim / config.z_dim_factor
     optimizer = optim.Adam(model.parameters(), config.learning_rate)
     criterion = nn.MSELoss()
     recon_loss_total = 0    
@@ -91,8 +96,6 @@ def train_sae(samples_path, checkpoints_dir, layer_name, config=SAEConfig):
         layer_name,
         {
             **asdict(config),
-            "means": None, # save npy vs toList
-            "stds": None,
             "last_recon_loss": recon_loss.item(),
             "last_sparsity_loss": sparsity_loss.item(),
         }
@@ -107,10 +110,17 @@ def register_metadata(checkpoints_path, layer_name, config):
         with open(json_path, "r") as file:
             metadata = json.load(file)
     
-    
     metadata[layer_name] = {**config, "device": config["device"].type}
     with open(json_path, "w") as file:
         json.dump(metadata, file, indent=2)
 
-def load_model(layer_name):
-    ...
+
+def load_sae(layer_name, checkpoints_dir, device="cuda:0" if torch.cuda.is_available() else "cpu"):
+    with open(os.path.join(checkpoints_dir, f"metadata.json")) as f:
+        meta = json.load(f)[layer_name]
+    in_dim, z_dim_factor = meta["in_dim"], meta["z_dim_factor"]
+    model = SAE(in_dim, z_dim_factor)
+    checkpoint_path = glob.glob(os.path.join(checkpoints_dir, f"{layer_name}_SAE*.pth"))[0]
+    checkpoint = torch.load(checkpoint_path)
+    model.load_state_dict(checkpoint)
+    return model.to(device).eval()
