@@ -38,27 +38,32 @@ class ActivationsCollector:
 
 
 def sample_pixels(a, samples_per_image=512):
-    b, _, h, w = a.shape
-    n = min(samples_per_image, h*w) * b
-    b_idx = torch.randint(0, b, (n,))
+    *_, h, w = a.shape
+    n = min(samples_per_image, h*w)
     w_idx = torch.randint(0, w, (n,))
     h_idx = torch.randint(0, h, (n,))
-    return a[b_idx, :, h_idx, w_idx]
+    return a[:, :, h_idx, w_idx]
 
 
 def store_activations(activations, out_dir, samples_per_image=512):
     os.makedirs(out_dir, exist_ok=True)
     for ln, a in activations.items():
-        samples = sample_pixels(a, samples_per_image=samples_per_image)
+        batched_samples = sample_pixels(a, samples_per_image=samples_per_image)
+        samples = batched_samples.transpose(0, 2, 1).reshape(-1, batched_samples.shape[1])
         np.save(
-            os.path.join(out_dir, f"{ln}_activations.npy"), 
+            os.path.join(out_dir, f"{ln}_local_activations.npy"), 
+            samples.cpu().numpy() if isinstance(samples, torch.Tensor) else samples
+        )
+
+        samples = batched_samples.mean(axis=2)
+        np.save(
+            os.path.join(out_dir, f"{ln}_global_activations.npy"), 
             samples.cpu().numpy() if isinstance(samples, torch.Tensor) else samples
         )
 
     meta = {"layers": list(activations.keys()), "samples_per_image": samples_per_image}
     with open(os.path.join(out_dir, "meta.json"), "w") as f:
         json.dump(meta, f, indent=2)
-
 
 
 
