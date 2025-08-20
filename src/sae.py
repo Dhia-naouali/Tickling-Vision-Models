@@ -34,10 +34,10 @@ class SAE(nn.Module):
 class SAEConfig:
     in_dim: int = None
     z_dim:  int = None
-    z_dim_factor: int = 2
-    batch_size: int = 32
-    learning_rate: float = 1e-3
-    l1_lambda: float = 1e-3
+    z_dim_factor: int = 32
+    batch_size: int = 64
+    learning_rate: float = 3e-4
+    l1_lambda: float = 5e-1
     epochs: int = 4
     device: Union[torch.device, str] = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     

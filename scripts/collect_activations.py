@@ -1,6 +1,5 @@
 import torch
 import argparse
-import numpy as np
 from tqdm import tqdm
 
 from src.collector import ActivationsCollector, store_activations, checkpoint_activations
@@ -11,7 +10,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--img-dir", default="__download__")
     parser.add_argument("--out-dir", default="latent_data")
-    parser.add_argument("--layer-names", nargs="+", default=["inception3a", "inception4b", "inception5a"])
+    parser.add_argument("--layer-names", nargs="+", default=["inception3a", "inception4a", "inception4d", "inception5b"])
     parser.add_argument("--samples-per-image", type=int, default=512)
     args = parser.parse_args()
 
