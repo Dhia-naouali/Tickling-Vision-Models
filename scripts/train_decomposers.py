@@ -17,7 +17,7 @@ def main():
     args = parser.parse_args()
 
     args_d = vars(args)
-    args_d["device"] = None
+    for k in ["device", "in_dim", "z_dim"]: args_d[k] = None
     config_fields = [f.name for f in fields(SAEConfig)]
 
     config_kwargs = {
