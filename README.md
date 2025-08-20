@@ -1,9 +1,7 @@
-# tickling-Vision-Models
+# Tickling-Vision-Models
 
 
 
-
-[](assets/image.png)
 <p align="center">
   <img src="assets/feature_visualizations_.png" width="640"><br>
   <em>activation maximized feature visualizations for top feature directions</em>
@@ -33,8 +31,7 @@ python -m patch_features
 ```
 
 
-[](assets/image.png)
 <p align="center">
-  <img src="image.png" width="420"><br>
+  <img src="assets/image.png" width="420"><br>
   <em>summer fever headache (some may call it "Grad-CAM")</em>
 </p>
