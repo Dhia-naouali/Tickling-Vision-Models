@@ -32,6 +32,7 @@ def setup_loader(img_dir, preprocess, batch_size=8, num_samples=5e3):
         "num_workers": os.cpu_count()
     }
     if img_dir == "__download__":
+        classes = [0, 3, 5, 6, 7, 9, 21, 27, 29, 86]
         def collate_fn(batch):
             images = [preprocess(x["image"].convert("RGB")) for x in batch]
             labels = [x["label"] for x in batch]
@@ -40,8 +41,7 @@ def setup_loader(img_dir, preprocess, batch_size=8, num_samples=5e3):
             "timm/mini-imagenet", 
             split="validation"
         )
-        indices = range(int(min(num_samples, len(dataset))))
-        return DataLoader(dataset.select(indices), **kwargs, collate_fn=collate_fn)
+        return DataLoader(dataset.filter(lambda x: x["label"] in classes), **kwargs, collate_fn=collate_fn)
 
     dataset = ImageFolder(img_dir, transform=preprocess)
     indices = list(range(min(num_samples, len(dataset))))
