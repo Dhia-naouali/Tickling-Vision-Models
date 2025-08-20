@@ -46,7 +46,6 @@ def maximize_direction(
         model(x_n)
         loss = -collector["ss"] + l2_lambda * (x.pow(2)).mean() + tv_lambda * tv(x)
         loss.backward(retain_graph=True)
-        # print(x.grad.shape)
         optimizer.step()
     handle.remove()
     return torch.sigmoid(x.detach()).cpu()

@@ -1,5 +1,3 @@
-import torch
-
 def swap_direction(target_A, donor_A, direction):
     direction = direction.view(1,-1,1,1).to(target_A.device)
     coef_d = (donor_A * direction).sum(dim=1, keepdim=True)
