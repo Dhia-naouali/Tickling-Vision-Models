@@ -37,7 +37,7 @@ def maximize_direction(
     handle = layer.register_forward_hook(hook)
     x = torch.randn(1, 3, img_size, img_size, requires_grad=True).to(device) * 0.1 + 0.5
     x.retain_grad()
-    optimizer = optim.Adam([x], lr)
+    optimizer = torch.optim.Adam([x], lr)
     for _ in range(steps):
         collector.clear()
         optimizer.zero_grad()
