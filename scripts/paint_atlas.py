@@ -38,9 +38,9 @@ def main():
         layer = layer_name_map[ln]
         sae = load_sae(ln, args.checkpoints_dir, device=device)
 
-        W = sae.decoder.weight.detach().cpu().numpy()
+        D = sae.decoder.weight.detach().cpu().numpy()
         # directions
-        W /= (np.linalg.norm(W, axis=0, keepdims=True) + 1e-10)
+        D /= (np.linalg.norm(D, axis=0, keepdims=True) + 1e-10)
 
         global_activations = np.load(
             os.path.join(
@@ -59,7 +59,7 @@ def main():
         alignment_scores = (global_activations @ W).var(axis=0)
         topk = np.argsort(-alignment_scores)[:args.directions_per_layer]
         for idx in tqdm(topk):
-            direction = torch.tensor([W[:, idx]], dtype=torch.float32, device=device)
+            direction = torch.tensor([D[:, idx]], dtype=torch.float32, device=device)
             img = maximize_direction(
                 model,
                 layer, 
