@@ -1,4 +1,3 @@
-import sys
 import os
 import glob
 import argparse
@@ -30,8 +29,8 @@ def main():
         **config_kwargs
     )
     
-    for np_block_path in glob.glob(os.path.join(args.data_dir, "*_activations.npy")):
-        layer_name = os.path.basename(np_block_path).replace("_activations.npy", "")
+    for np_block_path in glob.glob(os.path.join(args.data_dir, "*_local_activations.npy")):
+        layer_name = os.path.basename(np_block_path).replace("_local_activations.npy", "")
         train_sae(np_block_path, args.checkpoints_dir, layer_name, config=config)
         
         
