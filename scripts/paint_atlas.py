@@ -3,6 +3,8 @@ import json
 import argparse
 import numpy as np
 from tqdm import tqdm
+from PIL import Image
+import matplotlib.pyplot as plt
 
 import torch
 from torchvision.utils import save_image
@@ -18,6 +20,8 @@ def main():
     parser.add_argument("--checkpoints-dir", default="SAE_checkpoints")
     parser.add_argument("--atlas-dir", default="atlas")
     parser.add_argument("--directions-per-layer", type=int, default=4)
+    parser.add_argument("--cmap", default="Blues")
+    parser.add_argument("--one-channel", type=bool, default=True)
     args = parser.parse_args()
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -69,6 +73,26 @@ def main():
             save_image(img, os.path.join(args.atlas_dir, f"{ln}_direction_{idx}.png"))
             u_proj = umap_projection(local_activations, samples_limit=3e3)
             np.save(os.path.join(args.atlas_dir, f"{ln}_direction_{idx}_umap.npy"), u_proj)
+            
+
+    img_files = [f for f in os.listdir(args.atlas_dir) if f.endswith(".png")]
+    r = 4
+    c = len(img_files) // r + bool(len(img_files) % r)
+
+    _, axes = plt.subplots(r, c, figsize=(r*5, c*5))
+    axes = axes.flatten()
+    
+    for img_file, ax in zip(img_files, axes):
+        img = Image.open(os.path.join(args.atlas_dir, img_file))
+        img = np.array(img)
+        if args.one_channel:
+            img = np.array(img).mean(axis=2)
+        ax.set_title(f'{img_file.replace(".png", "")}', fontsize=10)
+        ax.axis("off")
+        ax.imshow(img, cmap=args.cmap)
+
+    plt.tight_layout()
+    plt.savefig(f"features_visualization.png")
 
 
 if __name__ == "__main__":
