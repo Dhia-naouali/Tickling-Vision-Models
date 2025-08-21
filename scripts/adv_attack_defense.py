@@ -65,24 +65,24 @@ def main():
         adv_logits = model(x_adv)
         adv_handle.remove()
         
-        a = original_activations["x"]
-        b = adv_activations["x"]
+        A = original_activations["x"]
+        adv_A = adv_activations["x"]
         
-        bs, c, h, w = b.shape
-        a = a.permute(0, 2, 3, 1).reshape(-1, c)
-        b = b.permute(0, 2, 3, 1).reshape(-1, c)
-        delta = b - a
+        c = adv_A.shape[1]
+        A = A.permute(0, 2, 3, 1).reshape(-1, c)
+        adv_A = adv_A.permute(0, 2, 3, 1).reshape(-1, c)
+        delta = adv_A - A
         
         sparse_delta = torch.matmul(delta, D.t())
         energy = sparse_delta.abs().mean(dim=0)
-        topk = torch.topk(energy, k=min(args.ablate_k, energy.numel())
+        topk = torch.topk(energy, k=min(args.ablate_k, energy.numel()))
         
         topk_idx = topk.indices.cpu().numpy().tolist()
         
         D_top = D[topk_idx]
         
         def ablate_hook(module, input_, output):
-            return ablate_directions(output, D_top, topk=None)
+            return ablate_directions(output, D_top)
         
         ablation_handle = layer.register_forward_hook(ablate_hook)
         ablation_logits = model(x_adv)
@@ -98,8 +98,8 @@ def main():
         })
 
     os.makedirs(args.adv_dir, exist_ok=True)
-    with open(os.path.join(args.adv_dir), f"{args.layer}_adversarial.json", "w") as file:
-        json.dump(reconds, file, indent=2)
+    with open(os.path.join(args.adv_dir, f"{args.layer}_adversarial.json"), "w") as file:
+        json.dump(records, file, indent=2)
 
 
 if __name__ == "__main__":
