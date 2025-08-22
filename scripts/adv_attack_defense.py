@@ -93,7 +93,7 @@ def main():
             "original_pred": pred.item(),
             "adv_pred": CLASSES[adv_logits.argmax().item()],
             "abl_adv_pred": CLASSES[ablation_logits.argmax().item()],
-            "top_blank": topk_idx,
+            "top_hijjacked": topk_idx,
             "delta_abl_origin_logits": ablation_logits.max().item() - logits.max().item(),
             "delta_abl_adv_logits": ablation_logits.max().item() - adv_logits.max().item()
         })
