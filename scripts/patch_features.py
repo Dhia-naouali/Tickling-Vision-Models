@@ -26,13 +26,18 @@ def main():
     model = load_inceptionV1(device)
     preprocess = imagenet_preprocess()
     dataset = setup_loader(args.raw_data_dir, preprocess).dataset
-    get_sample = lambda i: (preprocess(dataset[i]["image"]), dataset[i]["label"])
-    indices = list(range(
+    def get_sample(i):
+        return preprocess(dataset[i]["image"].convert("RGB")), dataset[i]["label"]
+        
+
+    indices = random.sample(
+        list(range(len(dataset))),
         min(
             len(dataset) - len(dataset) % 2,
-            2*args.num_pairs)
-    ))
-    random.shuffle(indices)
+            2*args.num_pairs
+        )
+    )
+
     p1 = indices[::2]
     p2 = indices[1::2]
     pairs = [
@@ -62,8 +67,8 @@ def main():
     results = []
     with torch.no_grad():
         for (donor, dlabel), (target, tlabel) in tqdm(pairs):
-            donor = preprocess(donor).to(device).unsqueeze(0)
-            target = preprocess(target).to(device).unsqueeze(0)
+            donor = donor.to(device).unsqueeze(0)
+            target = target.to(device).unsqueeze(0)
             
             donor_handle = layer_.register_forward_hook(donor_hook)    
             model(donor)
