@@ -68,7 +68,7 @@ def main():
         
         c = adv_A.shape[1]
         A = A.permute(0, 2, 3, 1).reshape(-1, c)
-        adv_A = adv_A.permute(0, 2, 3, 1).reshape(-1, c)
+        adv_A = adv_A.permute(0, 2, 3, 1).reshape(-1, c).contiguous()
         delta = adv_A - A
         
         sparse_delta = torch.matmul(delta, D)
@@ -78,7 +78,11 @@ def main():
         D_top = D[:, topk_idx]
         
         def ablate_hook(module, input_, output):
-            return ablate_directions(output, D_top)
+            b, c, h, w = output.shape
+            output_ = output.permute(0, 2, 3, 1).reshape(-1, c)
+            original_ = original_activations["x"].permute(0, 2, 3, 1).reshape(-1, c)
+            ablated = ablate_directions(original_, output_, D_top)
+            return ablated.view(b, h, w, c).permute(0, 3, 1, 2).contiguous()
         
         ablation_handle = layer.register_forward_hook(ablate_hook)
         ablation_logits = model(x_adv); ablation_handle.remove()

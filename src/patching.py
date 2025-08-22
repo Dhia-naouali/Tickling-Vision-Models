@@ -7,12 +7,13 @@ def swap_direction(target_A, donor_A, direction):
     return target_A + (coef_d - coef_t) * direction
 
 
-def ablate_directions(A, D):
-    b, c, h, w = A.shape
-    A = A.permute(0, 2, 3, 1).view(-1, c)
-
+def ablate_directions(A, adv_A, D):
     D /= (D.norm(dim=0, keepdim=True) + 1e-8)
-    W = torch.matmul(A, D) 
+    
+    W = torch.matmul(A, D)
+    adv_W = torch.matmul(adv_A, D)
+    
     V = torch.matmul(W, D.T)
+    adv_V = torch.matmul(adv_W, D.T)
 
-    return (A - V).view(b, h, w, c).permute(0, 3, 1, 2)
+    return adv_A - adv_V + V
