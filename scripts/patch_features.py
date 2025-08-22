@@ -9,7 +9,7 @@ import torch
 
 from src.sae import load_sae
 from src.patching import swap_direction
-from src.utils import load_inceptionV1, imagenet_preprocess, setup_loader
+from src.utils import load_inceptionV1, imagenet_preprocess, setup_loader, CLASSES
 
 def main():
     parser = argparse.ArgumentParser()
@@ -79,13 +79,14 @@ def main():
             target_handle.remove()
             
             probs = logits.softmax(dim=1)
-            top5 = torch.topk(probs, k=5)
+            top5 = torch.topk(probs[0, CLASSES], k=5)
+            top5_indices = [CLASSES[i] for i in top5.indices.tolist()]
             results.append({
                 "donor_target": dlabel,
                 "target_label": tlabel,
                 "direction_index": direction_idx.item(),
-                "top5_classes": top5.indices.tolist()[0],
-                "top5_probs": top5.values.tolist()[0]
+                "top5_classes": top5_indices,
+                "top5_probs": top5.values.tolist()
             })
             
     os.makedirs(args.atlas_dir, exist_ok=True)
