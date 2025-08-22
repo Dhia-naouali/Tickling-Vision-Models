@@ -92,7 +92,7 @@ def main():
         ax.imshow(img, cmap=args.cmap)
 
     plt.tight_layout()
-    plt.savefig(f"features_visualization.png")
+    plt.savefig(f"features_visualization.png", dpi=300, bbox_inches='tight')
 
 
 if __name__ == "__main__":

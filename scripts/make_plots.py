@@ -10,8 +10,13 @@ from collections import defaultdict, Counter
 from sklearn.metrics import confusion_matrix
 
 def main():
+    savefig_kwargs = {
+        "dpi": 300,
+        "bbox_inches": 'tight',
+    }
     parser = argparse.ArgumentParser()
     parser.add_argument("--atlas-dir", default="atlas")
+    parser.add_argument("--advs-dir", default="advs")
     
     args = parser.parse_args()
     
@@ -53,7 +58,7 @@ def main():
     plt.title("Donor-Target influence based on top5 logits")
     plt.ylabel("Donor class")
     plt.xlabel("Target class")
-    plt.savefig(os.path.join(args.atlas_dir, "donor_influence_matrix.png"))
+    plt.savefig(os.path.join(args.atlas_dir, "donor_influence_matrix.png"), **savefig_kwargs)
 
     shifts = []
     for r in patching_records:
@@ -65,7 +70,7 @@ def main():
     plt.title("Distribution of donor probability in top5 logits")
     plt.xlabel("probability")
     plt.ylabel("frequency")
-    plt.savefig(os.path.join(args.atlas_dir, "donor_prob_dist.png"))
+    plt.savefig(os.path.join(args.atlas_dir, "donor_prob_dist.png"), **savefig_kwargs)
 
 
 
@@ -87,7 +92,7 @@ def main():
     plt.title("Frequency of top hijacked directions")
     plt.xlabel("Direction index")
     plt.ylabel("number of samples")
-    plt.savefig(os.path.join(args.atlas_dir, "directions_hijack_freq.png"))
+    plt.savefig(os.path.join(args.atlas_dir, "directions_hijack_freq.png"), **savefig_kwargs)
 
 
     plt.figure(figsize=(6,6))
@@ -97,15 +102,16 @@ def main():
     plt.title("Ablation effectiveness per sample")
     plt.axhline(0, color='red', linestyle='--', alpha=.5)
     plt.axvline(0, color='red', linestyle='--', alpha=.5)
-    plt.savefig(os.path.join(args.atlas_dir, "ablation_effectiveness.png"))
+    plt.savefig(os.path.join(args.atlas_dir, "ablation_effectiveness.png"), **savefig_kwargs)
 
 
     recovered_idx = np.where((adv_pred != ground_truth) & (abl_adv_pred == ground_truth))[0]
     if len(recovered_idx) > 0:
+        plt.figure(figsize=(6,6))
         cm = confusion_matrix(ground_truth[recovered_idx], abl_adv_pred[recovered_idx])
         plt.title("confusion matrix of recovered samples")
         sns.heatmap(cm, annot=True, cmap="bone")
-        plt.savefig(os.path.join(args.atlas_dir, "ablation_recovery_confusion_matrix.png"))
+        plt.savefig(os.path.join(args.atlas_dir, "ablation_recovery_confusion_matrix.png"), **savefig_kwargs)
         
         
         
