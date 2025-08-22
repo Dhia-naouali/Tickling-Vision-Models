@@ -18,7 +18,7 @@ def main():
     parser.add_argument("--checkpoints-dir", default="SAE_checkpoints")
     parser.add_argument("--data-dir", default="latent_data")
     parser.add_argument("--atlas-dir", default="atlas")
-    parser.add_argument("--num-pairs", type=int, default=12)
+    parser.add_argument("--num-pairs", type=int, default=512)
 
     args = parser.parse_args()
     

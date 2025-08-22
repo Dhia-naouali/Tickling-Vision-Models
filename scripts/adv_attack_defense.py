@@ -16,9 +16,9 @@ def main():
     parser.add_argument("--raw-data-dir", default="__download__")
     parser.add_argument("--adv-dir", default="advs")
     parser.add_argument("--checkpoints-dir", default="SAE_checkpoints")
-    parser.add_argument("--pgd-steps", type=int, default=12)
-    parser.add_argument("--ablate-p", type=float, default=0.25)    
-    parser.add_argument("--num-samples", type=int, default=64)    
+    parser.add_argument("--pgd-steps", type=int, default=4)
+    parser.add_argument("--ablate-p", type=float, default=0.6)    
+    parser.add_argument("--num-samples", type=int, default=512)    
     args = parser.parse_args()
 
     
