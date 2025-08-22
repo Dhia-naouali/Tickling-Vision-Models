@@ -78,8 +78,9 @@ def main():
             logits = model(target)
             target_handle.remove()
             
-            probs = logits.softmax(dim=1)
-            top5 = torch.topk(probs[0, CLASSES], k=5)
+            logits = logits[0, CLASSES]
+            probs = logits.softmax(dim=0)
+            top5 = torch.topk(probs, k=5)
             top5_indices = [CLASSES[i] for i in top5.indices.tolist()]
             results.append({
                 "donor_target": dlabel,

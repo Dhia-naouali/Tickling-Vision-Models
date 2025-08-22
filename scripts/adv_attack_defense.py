@@ -4,7 +4,7 @@ import argparse
 
 import torch
 
-from src.utils import load_inceptionV1, imagenet_preprocess, setup_loader
+from src.utils import load_inceptionV1, imagenet_preprocess, setup_loader, CLASSES
 from src.patching import ablate_directions
 from src.adv import pgd, fgsm
 from src.sae import load_sae
@@ -48,7 +48,8 @@ def main():
         x = x.to(device).requires_grad_(True)
         with torch.no_grad():
             logits = model(x)
-            pred = logits.argmax(dim=1)
+            logits = logits[0, CLASSES]
+            pred = logits.argmax(dim=0)
             
 
         x_adv = pgd(model, x.detach(), pred, steps=args.pgd_steps) if args.pgd_steps > 1 \
@@ -60,6 +61,7 @@ def main():
         
         adv_handle = layer.register_forward_hook(adv_hook)
         adv_logits = model(x_adv); adv_handle.remove()
+        adv_logits = adv_logits[0, CLASSES]
         
         A = original_activations["x"]
         adv_A = adv_activations["x"]
@@ -80,12 +82,13 @@ def main():
         
         ablation_handle = layer.register_forward_hook(ablate_hook)
         ablation_logits = model(x_adv); ablation_handle.remove()
+        ablation_logits = ablation_logits[0, CLASSES]
         
         records.append({
             "ground_truth": y.item(),
             "original_pred": pred.item(),
-            "adv_pred": adv_logits.argmax(dim=1).item(),
-            "abl_adv_pred": ablation_logits.argmax(dim=1).item(),
+            "adv_pred": CLASSES[adv_logits.argmax().item()],
+            "abl_adv_pred": CLASSES[ablation_logits.argmax().item()],
             "top_blank": topk_idx,
             "delta_abl_origin_logits": ablation_logits.max().item() - logits.max().item(),
             "delta_abl_adv_logits": ablation_logits.max().item() - adv_logits.max().item()
