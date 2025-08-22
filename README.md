@@ -49,6 +49,11 @@ test causal impact feature patching with donor acctivations on model predictions
 python -m scripts.patch_features
 ```
 
+test logits shift on adversarial examples and directional adversarial residual ablation for recovery
+```bash
+python -m scripts.adversarial_attack_ablation
+```
+
 
 <p align="center">
   <img src="assets/image.png" width="420"><br>
