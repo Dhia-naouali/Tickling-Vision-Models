@@ -9,10 +9,10 @@ def swap_direction(target_A, donor_A, direction):
 
 def ablate_directions(A, D):
     b, c, h, w = A.shape
-    A = A.view(-1, c)
+    A = A.permute(0, 2, 3, 1).view(-1, c)
 
     D /= (D.norm(dim=0, keepdim=True) + 1e-8)
     W = torch.matmul(A, D) 
     V = torch.matmul(W, D.T)
 
-    return (A - V).view(b, c, h, w)
+    return (A - V).view(b, h, w, c).permute(0, 3, 1, 2)
