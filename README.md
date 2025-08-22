@@ -46,7 +46,7 @@ python -m scripts.pain_atlas
 
 test causal impact feature patching with donor acctivations on model predictions
 ```bash
-python -m patch_features
+python -m scripts.patch_features
 ```
 
 
