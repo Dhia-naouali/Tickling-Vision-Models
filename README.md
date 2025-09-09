@@ -41,7 +41,7 @@ python -m scripts.train_decomposers
 
 top direction feature visualization using sparse representation activation maximization
 ```bash
-python -m scripts.pain_atlas
+python -m scripts.paint_atlas
 ```
 
 test causal impact feature patching with donor acctivations on model predictions
