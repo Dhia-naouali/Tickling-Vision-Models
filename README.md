@@ -4,7 +4,7 @@
   <tr>
     <td colspan="2" style="text-align:center;">
     <p align="center">
-      <img src="assets/feature_visualizations_.png" width="100%"><br>
+      <img src="figures/feature_visualizations_.png" width="100%"><br>
       <em>activation maximized feature visualizations for top feature directions</em>
     </p>
     </td>
@@ -12,13 +12,13 @@
   <tr>
     <td style="text-align:center;">
     <p align="center">
-      <img src="assets/donor_influence_matrix.png" width="560"><br>
+      <img src="figures/donor_influence_matrix.png" width="560"><br>
       <em>Donor-Target influence (top5 logits)</em>
     </p>      
     </td>
     <td style="text-align:center;">
     <p align="center">
-      <img src="assets/ablation_effectiveness.png" width="480"><br>
+      <img src="figures/ablation_effectiveness.png" width="480"><br>
       <em>ablation effectiveness per sample</em>
     </p>
     </td>
@@ -56,6 +56,6 @@ python -m scripts.adversarial_attack_ablation
 
 
 <p align="center">
-  <img src="assets/image.png" width="420"><br>
+  <img src="figures/image.png" width="420"><br>
   <em>summer fever headache (some may call it "Grad-CAM")</em>
 </p>
