@@ -44,7 +44,7 @@ top direction feature visualization using sparse representation activation maxim
 python -m scripts.paint_atlas
 ```
 
-test causal impact feature patching with donor acctivations on model predictions
+test causal impact feature patching with donor activations on model predictions
 ```bash
 python -m scripts.patch_features
 ```
@@ -53,7 +53,10 @@ test logits shift on adversarial examples and directional adversarial residual a
 ```bash
 python -m scripts.adversarial_attack_ablation
 ```
-
+run all and make plots with:
+```bash
+./run.sh
+```
 
 <p align="center">
   <img src="figures/image.png" width="420"><br>
